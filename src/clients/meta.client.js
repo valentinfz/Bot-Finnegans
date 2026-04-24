@@ -1,0 +1,1 @@
+//Esto se completa con la documentacion de Meta luego. Dejo el archivo reservado para futuras integraciones o pruebas directas con la API de WhatsApp Business. Por ahora, el envío de mensajes se simula con logs en consola desde MessageService.

@@ -1,0 +1,10 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno
+.env
+env.js
+
+# Logs y basura del SO
+npm-debug.log*
+.DS_Store
