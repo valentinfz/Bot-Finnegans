@@ -1,4 +1,6 @@
+const httpClient = require('./http.client');
 const config = require('../config/env');
+const logger = require('../config/logger');
 
 class FinnegansClient {
     async getCasosCBG(fechaDesde, fechaHasta, numeroInterno) {
@@ -12,12 +14,12 @@ class FinnegansClient {
         const url = `${config.finnegans.apiUrl}/reports/CasosCBG?${params.toString()}`;
 
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Finnegans API Error: ${response.status}`);
-            return await response.json();
+            logger.debug(`Ejecutando petición GET a Finnegans para ticket ${numeroInterno}`);
+            const response = await httpClient.get(url);
+            return response.data;
         } catch (error) {
-            console.error('[FinnegansClient] Falla en la conexión:', error.message);
-            throw error; // Propaga el error para que el Service decida qué hacer
+            logger.error({ err: error }, `Falla crítica comunicando con API Finnegans para ticket ${numeroInterno}`);
+            throw error;
         }
     }
 }

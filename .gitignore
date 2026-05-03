@@ -3,8 +3,17 @@ node_modules/
 
 # Variables de entorno
 .env
-env.js
+.env.local
 
-# Logs y basura del SO
+# Logs
+*.log
 npm-debug.log*
+
+# Testing
+coverage/
+.vitest/
+
+# Basura del Sistema Operativo y Editores
 .DS_Store
+Thumbs.db
+.vscode/

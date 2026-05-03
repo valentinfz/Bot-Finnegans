@@ -1,22 +1,31 @@
-const config = require('../config/env');
+const logger = require('../config/logger');
+const parser = require('../utils/intent.parser');
+const formatter = require('../utils/response.formatter');
 
 class MessageService {
     async procesarMensajeEntrante(numeroUsuario, textoRecibido) {
-        const ticketService = require('./ticket.service');
+        const ticketService = require('./ticket.service'); // Importación interna para evitar dependencias circulares
         
-        const textoLimpio = textoRecibido.trim();
-        const esNumero = /^\d+$/.test(textoLimpio);
+        logger.info(`Analizando intención del mensaje de ${numeroUsuario}`);
+        const numeroTicketDetectado = parser.extraerNumeroCaso(textoRecibido);
 
-        let respuesta = esNumero 
-            ? await ticketService.consultarEstado(textoLimpio)
-            : "¡Hola! Por favor, enviá solo el número de tu ticket.";
+        let respuestaCrm;
 
-        console.log(`[BOT] Respuesta generada para ${numeroUsuario}`);
-        this.enviarMensajeWhatsApp(numeroUsuario, respuesta);
+        if (numeroTicketDetectado) {
+            logger.debug(`Intención detectada: Consulta de ticket #${numeroTicketDetectado}`);
+            respuestaCrm = await ticketService.consultarEstado(numeroTicketDetectado);
+        } else {
+            logger.debug(`Intención no detectada. Solicitando formato correcto.`);
+            respuestaCrm = formatter.templateErrorValidacion();
+        }
+
+        await this.enviarMensajeWhatsApp(numeroUsuario, respuestaCrm);
     }
 
     async enviarMensajeWhatsApp(numeroDestino, mensaje) {
-        console.log(`\n[WHATSAPP OUT] -> ${numeroDestino}: \n${mensaje}\n`);
+        // Acá luego irá el código para hacer HTTP POST a la API de Meta
+        logger.info(`[WA_OUT] -> Enviando mensaje a ${numeroDestino}`);
+        console.log(`\n================== MENSAJE ==================\n${mensaje}\n=============================================\n`);
     }
 }
 

@@ -1,4 +1,6 @@
-const config = require('../config/env');
+const finnegansClient = require('../clients/finnegans.client');
+const { CrmResponseSchema } = require('../schemas/crm.schema');
+const logger = require('../config/logger');
 
 class FinnegansRepository {
     async obtenerEstadoTicket(numeroTicket) {
@@ -6,33 +8,27 @@ class FinnegansRepository {
         const fechaDesde = `${currentYear}-01-01`;
         const fechaHasta = new Date().toISOString().split('T')[0];
 
-        const params = new URLSearchParams({
-            ACCESS_TOKEN: config.finnegans.accessToken,
-            PARAMCasosDesde: fechaDesde,
-            PARAMCasosHasta: fechaHasta,
-            PARAMNumeroInterno: numeroTicket
-        });
-
-        const url = `${config.finnegans.apiUrl}/reports/CasosCBG?${params.toString()}`;
-
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Finnegans API Error: ${response.status}`);
+            const rawData = await finnegansClient.getCasosCBG(fechaDesde, fechaHasta, numeroTicket);
             
-            const data = await response.json();
-            
-            if (data && data.length > 0) {
-                return { 
-                    encontrado: true, 
-                    nroCaso: data[0].CASO, 
-                    estado: data[0].ESTADO, 
-                    titulo: data[0].TITULO 
+            // Validación estricta con Zod
+            const parsedData = CrmResponseSchema.parse(rawData);
+
+            if (parsedData && parsedData.length > 0) {
+                const ticket = parsedData[0];
+                return {
+                    encontrado: true,
+                    nroCaso: ticket.CASO,
+                    estado: ticket.ESTADO,
+                    titulo: ticket.TITULO || "Sin Asunto",
+                    partner: ticket["RAMA PROPIETARIO 1"] !== "Cliente Directo" ? ticket["RAMA PROPIETARIO 1"] : null
                 };
             }
             return { encontrado: false };
+
         } catch (error) {
-            console.error('[FinnegansRepository] Error:', error.message);
-            throw error; 
+            logger.error({ err: error }, 'Error procesando datos del CRM');
+            throw new Error('Fallo al obtener ticket del CRM');
         }
     }
 }

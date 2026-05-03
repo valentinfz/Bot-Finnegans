@@ -1,14 +1,15 @@
 const config = require('../config/env');
+const logger = require('../config/logger');
 const mockRepo = require('./mock.repository');
 const finnegansRepo = require('./finnegans.repository');
 
 class RepositoryFactory {
     static getTicketRepository() {
         if (config.useMockData) {
-            console.log("Usando Mock Repository");
+            logger.info("Fábrica inyectando -> MockRepository");
             return mockRepo;
         } else {
-            console.log("Usando Finnegans API Repository");
+            logger.info("Fábrica inyectando -> FinnegansRepository");
             return finnegansRepo;
         }
     }

@@ -1,15 +1,20 @@
 const express = require('express');
 const config = require('./config/env');
+const logger = require('./config/logger');
 const webhookRoutes = require('./routes/webhook.routes');
 
 const app = express();
 app.use(express.json());
 
-console.log('Tipo de webhookRoutes:', typeof webhookRoutes); 
+app.use((req, res, next) => {
+    logger.debug(`${req.method} ${req.path}`);
+    next();
+});
 
+// Rutas
 app.use('/api', webhookRoutes);
 
 app.listen(config.port, () => {
-    console.log(`Servidor corriendo en el puerto ${config.port}`);
-    console.log(`Base de datos: ${config.useMockData ? 'MOCK' : 'FINNEGANS'}`);
+    logger.info(`Servidor inicializado y escuchando en el puerto ${config.port}`);
+    logger.info(`Entorno de Datos Configurado: ${config.useMockData ? 'MOCK (Local)' : 'FINNEGANS API (Producción)'}`);
 });

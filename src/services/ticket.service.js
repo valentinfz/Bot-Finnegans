@@ -1,20 +1,28 @@
 const RepositoryFactory = require('../repositories/repository.factory');
+const formatter = require('../utils/response.formatter');
+const logger = require('../config/logger');
 
 class TicketService {
-    // Sacamos el constructor para evitar bloqueos en la carga
-    
     async consultarEstado(numeroIngresado) {
         try {
             const ticketRepo = RepositoryFactory.getTicketRepository();
             const resultado = await ticketRepo.obtenerEstadoTicket(numeroIngresado);
             
-            if (resultado.encontrado) {
-                return `*Caso #${resultado.nroCaso}*\nAsunto: ${resultado.titulo}\nEstado actual: *${resultado.estado}*`;
-            } else {
-                return `No logré encontrar un caso con el número ${numeroIngresado}. Por favor, verificá que esté bien escrito.`;
+            if (!resultado.encontrado) {
+                return formatter.templateNoEncontrado(numeroIngresado);
             }
+
+            // Regla de Negocio: Redirección si tiene Partner
+            if (resultado.partner) {
+                logger.info(`Ticket ${numeroIngresado} desviado por regla de Partner (${resultado.partner})`);
+                return formatter.templatePartner(resultado);
+            }
+
+            return formatter.templateEstadoCaso(resultado);
+
         } catch (error) {
-            return "Disculpá, el sistema de tickets no está disponible en este momento. Intentá más tarde.";
+            logger.error({ err: error }, `Fallo en el servicio de tickets para el nro ${numeroIngresado}`);
+            return formatter.templateErrorSistema();
         }
     }
 }
