@@ -12,30 +12,21 @@ const verificarWebhook = (req, res) => {
     }
     logger.warn('Intento de verificación de webhook fallido (Token inválido)');
     res.sendStatus(403);
-    
 };
 
 const recibirMensaje = async (req, res) => {
-
     try {
         const entry = req.body.entry?.[0];
         const changes = entry?.changes?.[0];
         const messageData = changes?.value?.messages?.[0];
 
-        const texto = messageData?.text?.body;
-        const numero = messageData?.from;
-
-        if (messageData && texto && numero) {
+        if (messageData) {
             logger.info(`Nuevo mensaje entrante procesado vía Webhook`);
-            await messageService.procesarMensajeEntrante(numero, texto);
-        } else {
-            logger.warn("Mensaje recibido sin texto o estructura no válida");
+            await messageService.procesarMensajeEntrante(messageData.from, messageData.text.body);
         }
-
-        res.sendStatus(200);
-
+        res.sendStatus(200); // Meta exige respuesta rápida
     } catch (error) {
-        logger.error({ err: error }, 'Fallo en el controlador del Webhook');
+        logger.error({ err: error }, 'Fallo en la capa de controladores del Webhook');
         res.sendStatus(500);
     }
 };
