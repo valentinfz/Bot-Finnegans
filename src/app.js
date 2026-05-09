@@ -16,5 +16,5 @@ app.use('/api', webhookRoutes);
 
 app.listen(config.port, () => {
     logger.info(`Servidor inicializado y escuchando en el puerto ${config.port}`);
-    logger.info(`Entorno de Datos Configurado: ${config.useMockData ? 'MOCK (Local)' : 'FINNEGANS API (Producción)'}`);
+    logger.info(`Entorno de Datos Configurado: ${config.useMockData ? `MOCK API (${config.finnegans.apiUrl})` : 'FINNEGANS API (Producción)'}`);
 });
