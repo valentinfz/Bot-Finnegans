@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 
 const app = express();
-const PORT = process.env.MOCK_PORT || 3002;
+const PORT = process.env.PORT || process.env.MOCK_PORT || 3002;
 
 const plantillaBase = {
     "FECHA FIN": "", "DOCUMENTO": "", "JIRA FECHA": "", "RAMA PROPIETARIO N": "",
